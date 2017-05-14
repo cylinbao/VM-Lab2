@@ -214,8 +214,8 @@ typedef struct CPUWatchpoint {
     uint64_t *shack;                                                    \
     uint64_t *shack_top;                                                \
     uint64_t *shack_end;                                                \
-    void *shadow_hash_list;                                             \
+    void *shadow_hash_list; /* list for unkown host address */               \
     int shadow_ret_count;                                               \
-    unsigned long *shadow_ret_addr;
+    unsigned long *shadow_ret_addr; // list for host return address
 
 #endif
