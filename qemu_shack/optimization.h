@@ -41,7 +41,6 @@ typedef struct list_head list_t;
 
 #define MAX_CALL_SLOT   (16 * 1024)
 #define SHACK_SIZE      (16 * 1024)
-//#define SHACK_SIZE      25
 
 typedef struct shadow_pair
 {

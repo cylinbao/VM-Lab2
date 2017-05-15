@@ -16,8 +16,6 @@ extern uint8_t *optimization_ret_addr;
 /*
  * Shadow Stack
  */
-list_t *shadow_hash_list;
-
 static TranslationBlock *my_tb_find_slow(CPUState *env,
                                          target_ulong pc,
                                          target_ulong cs_base,
@@ -243,6 +241,8 @@ void pop_shack(TCGv_ptr cpu_env, TCGv next_eip)
  */
 __thread int update_ibtc;
 
+struct ibtc_table *ibtc_tb;
+
 /*
  * helper_lookup_ibtc()
  *  Look up IBTC. Return next host eip if cache hit or
@@ -250,6 +250,13 @@ __thread int update_ibtc;
  */
 void *helper_lookup_ibtc(target_ulong guest_eip)
 {
+    uint16_t idx = guest_eip & IBTC_CACHE_MASK;
+    struct jmp_pair *jp = &ibtc_tb->htable[idx];
+
+    if (jp->guest_eip == guest_eip)
+        return jp->tb->tc_ptr; // return to the taget tb
+
+    update_ibtc = 1; // cache miss, turn on this flag to fill tb later
     return optimization_ret_addr;
 }
 
@@ -259,6 +266,13 @@ void *helper_lookup_ibtc(target_ulong guest_eip)
  */
 void update_ibtc_entry(TranslationBlock *tb)
 {
+    uint16_t idx = tb->pc & IBTC_CACHE_MASK;
+    struct jmp_pair *jp = &ibtc_tb->htable[idx];
+
+    // updating
+    jp->guest_eip = tb->pc;
+    jp->tb = tb;
+    update_ibtc = 0; // finish updating, turn off this flag
 }
 
 /*
@@ -267,6 +281,13 @@ void update_ibtc_entry(TranslationBlock *tb)
  */
 static inline void ibtc_init(CPUState *env)
 {
+    int i;
+    ibtc_tb = malloc(sizeof(struct ibtc_table));
+    for(i=0; i<IBTC_CACHE_SIZE; i++){
+        ibtc_tb->htable[i].guest_eip = 0;
+        ibtc_tb->htable[i].tb = NULL;
+    }
+    update_ibtc = 0;
 }
 
 /*
@@ -276,7 +297,7 @@ static inline void ibtc_init(CPUState *env)
 int init_optimizations(CPUState *env)
 {
     shack_init(env);
-    //ibtc_init(env);
+    ibtc_init(env);
 
     return 0;
 }
