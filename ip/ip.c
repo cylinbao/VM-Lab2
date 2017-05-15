@@ -15,7 +15,9 @@ int ip()
 
 int main()
 {
-	int a = ip() + 1;
+	int a = ip();
+
+	printf("Results: %d\n", a);
 
 	return 0;
 }
