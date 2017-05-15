@@ -43,12 +43,13 @@ typedef struct list_head list_t;
 #define SHACK_SIZE      (16 * 1024)
 //#define SHACK_SIZE      25
 
-struct shadow_pair
+typedef struct shadow_pair
 {
-    struct list_head l;
+    //struct list_head l;
+    struct shadow_pair *prev_sp;
     target_ulong guest_eip; // guest return address
     unsigned long *shadow_slot; // host return address
-};
+} shadow_pair;
 
 void shack_set_shadow(CPUState *env, target_ulong guest_eip, unsigned long *host_eip);
 inline void insert_unresolved_eip(CPUState *env, target_ulong next_eip, unsigned long *slot);
