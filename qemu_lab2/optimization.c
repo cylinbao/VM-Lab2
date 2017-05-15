@@ -85,9 +85,6 @@ static inline TranslationBlock *my_tb_find_fast(CPUState *env, target_ulong pc)
 
 static inline void shack_init(CPUState *env)
 {
-    printf("Size of target_ulong: %d\n", sizeof(target_ulong));
-    printf("Size of uint64_t: %d\n", sizeof(uint64_t));
-
     env->shack = (uint64_t *) malloc(SHACK_SIZE * sizeof(uint64_t));
     env->shadow_hash_list = malloc(MAX_CALL_SLOT * sizeof(shadow_pair*));
     memset(env->shadow_hash_list, 0, sizeof(shadow_pair*) * MAX_CALL_SLOT);
